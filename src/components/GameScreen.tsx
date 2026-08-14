@@ -503,7 +503,7 @@ const GameScreen = ({
     const frameLeft = 40;
     const frameRight = 400 - 40; // LOGICAL_WIDTH = 400
     const currentRadius = getRadius(currentNumRef.current);
-    const newX = Math.max(frameLeft + currentRadius + 8, Math.min(x, frameRight - currentRadius - 8));
+    const newX = Math.max(frameLeft + currentRadius + 1, Math.min(x, frameRight - currentRadius - 1));
     pointerXRef.current = newX;
     
     if (launcherRef.current) {
@@ -545,13 +545,13 @@ const GameScreen = ({
     const height = 800; // LOGICAL_HEIGHT
     
     const radius = getRadius(currentNum);
-    const ball = Matter.Bodies.circle(pointerXRef.current, height - 140, radius, {
+    const ball = Matter.Bodies.circle(pointerXRef.current + (Math.random() - 0.5) * 1.5, height - 140, radius, {
       label: 'ball', restitution: 0.05, friction: 0.01, frictionStatic: 0.01, frictionAir: 0.002, density: 0.08, slop: 0.05
     }) as any;
     ball.customValue = currentNum;
     ball.createdAt = Date.now(); // Fırlatılan topa dokunulmazlık
     
-    Matter.Body.setVelocity(ball, { x: (Math.random() - 0.5) * 5, y: -28 });
+    Matter.Body.setVelocity(ball, { x: 0, y: -28 });
     Matter.World.add(engineRef.current.world, ball);
     
     let nextN = 0;
