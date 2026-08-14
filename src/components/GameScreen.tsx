@@ -198,7 +198,7 @@ const GameScreen = ({
     
     // Oyun Alanı Sınırları (Çerçeve) - Yukardan ve aşağıdan daraltıldı
     const frameTop = 155; // Başlık ile çakışmaması için aşağı çekildi
-    const frameBottom = height - 190;
+
     const frameLeft = 40;
     const frameRight = width - 40;
 
