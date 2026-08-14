@@ -53,7 +53,7 @@ const GameScreen = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const launcherRef = useRef<HTMLDivElement>(null);
   
-  const forceNextTwoRef = useRef(false);
+  const turnsUntilNextTwoRef = useRef(-1);
   
   const [score, setScore] = useState(0);
   const scoreRef = useRef(0);
@@ -61,7 +61,7 @@ const GameScreen = ({
   
   const [currentNum, setCurrentNum] = useState(() => {
     const num = getRandomNumber(0);
-    if (num === 2) forceNextTwoRef.current = true;
+    if (num === 2) turnsUntilNextTwoRef.current = Math.floor(Math.random() * 3) + 1;
     return num;
   });
   const currentNumRef = useRef(currentNum);
@@ -555,12 +555,22 @@ const GameScreen = ({
     Matter.World.add(engineRef.current.world, ball);
     
     let nextN = 0;
-    if (forceNextTwoRef.current) {
-      forceNextTwoRef.current = false;
+    if (turnsUntilNextTwoRef.current === 0) {
       nextN = 2;
+      turnsUntilNextTwoRef.current = -1;
     } else {
       nextN = getRandomNumber(scoreRef.current);
-      if (nextN === 2) forceNextTwoRef.current = true;
+      if (turnsUntilNextTwoRef.current > 0) {
+        if (nextN === 2) {
+          turnsUntilNextTwoRef.current = -1; // Doğal yoldan 2 geldi, çift tamamlandı
+        } else {
+          turnsUntilNextTwoRef.current--;
+        }
+      } else {
+        if (nextN === 2) {
+          turnsUntilNextTwoRef.current = Math.floor(Math.random() * 3) + 1; // 1 ile 3 el sonra garanti 2 gelsin
+        }
+      }
     }
     setCurrentNum(nextN);
     saveGame();
