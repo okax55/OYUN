@@ -53,11 +53,17 @@ const GameScreen = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const launcherRef = useRef<HTMLDivElement>(null);
   
+  const forceNextTwoRef = useRef(false);
+  
   const [score, setScore] = useState(0);
   const scoreRef = useRef(0);
   scoreRef.current = score;
   
-  const [currentNum, setCurrentNum] = useState(getRandomNumber(0));
+  const [currentNum, setCurrentNum] = useState(() => {
+    const num = getRandomNumber(0);
+    if (num === 2) forceNextTwoRef.current = true;
+    return num;
+  });
   const currentNumRef = useRef(currentNum);
   currentNumRef.current = currentNum;
 
@@ -184,7 +190,7 @@ const GameScreen = ({
     canvasRef.current.width = width * dpr;
     canvasRef.current.height = height * dpr;
     
-    const engine = Matter.Engine.create({ enableSleeping: true });
+    const engine = Matter.Engine.create({ enableSleeping: false });
     engine.gravity.y = -1; // Ters yerçekimi
     engine.positionIterations = 16; // Performans ve akıcılık için düşürüldü
     engine.velocityIterations = 16;
@@ -209,14 +215,21 @@ const GameScreen = ({
         const saved = localStorage.getItem('dropMergeSave');
         if (saved) {
           const data = JSON.parse(saved);
-          setScore(data.score || 0);
-          setCurrentNum(data.currentNum || getRandomNumber(data.score || 0));
+          const loadedScore = data.score || 0;
+          setScore(loadedScore);
+          setCurrentNum(data.currentNum || getRandomNumber(loadedScore));
           
-          if (data.bodies && data.bodies.length > 0) {
-            const restoredBodies = data.bodies.map((b: any) => {
-              const ball = Matter.Bodies.circle(b.x, b.y, b.radius, {
-                label: 'ball', restitution: 0.01, friction: 0.8, frictionStatic: 1.0, density: 0.05, slop: 0.05
-              }) as any;
+          let ms = 1000;
+          while (ms <= loadedScore) {
+            ms *= 2;
+          }
+          nextMilestone.current = ms;
+          
+            if (data.bodies && data.bodies.length > 0) {
+              const restoredBodies = data.bodies.map((b: any) => {
+                const ball = Matter.Bodies.circle(b.x, b.y, b.radius, {
+                  label: 'ball', restitution: 0.2, friction: 0.1, frictionStatic: 0.1, density: 0.05, slop: 0.05
+                }) as any;
               Matter.Body.setVelocity(ball, { x: b.vx, y: b.vy });
               ball.customValue = b.value;
               return ball;
@@ -272,7 +285,7 @@ const GameScreen = ({
           }
           
           const newBall = Matter.Bodies.circle(midX, midY, newRadius, {
-            label: 'ball', restitution: 0.01, friction: 0.8, frictionStatic: 1.0, density: 0.05, slop: 0.05
+            label: 'ball', restitution: 0.2, friction: 0.1, frictionStatic: 0.1, density: 0.05, slop: 0.05
           }) as any;
           newBall.customValue = newValue;
           newBall.createdAt = Date.now(); // Birleşen topa dokunulmazlık
@@ -533,15 +546,23 @@ const GameScreen = ({
     
     const radius = getRadius(currentNum);
     const ball = Matter.Bodies.circle(pointerXRef.current, height - 140, radius, {
-      label: 'ball', restitution: 0.01, friction: 0.8, frictionStatic: 1.0, density: 0.05, slop: 0.05
+      label: 'ball', restitution: 0.2, friction: 0.1, frictionStatic: 0.1, density: 0.05, slop: 0.05
     }) as any;
     ball.customValue = currentNum;
     ball.createdAt = Date.now(); // Fırlatılan topa dokunulmazlık
     
-    Matter.Body.setVelocity(ball, { x: 0, y: -26 });
+    Matter.Body.setVelocity(ball, { x: (Math.random() - 0.5) * 2, y: -26 });
     Matter.World.add(engineRef.current.world, ball);
     
-    setCurrentNum(getRandomNumber(scoreRef.current));
+    let nextN = 0;
+    if (forceNextTwoRef.current) {
+      forceNextTwoRef.current = false;
+      nextN = 2;
+    } else {
+      nextN = getRandomNumber(scoreRef.current);
+      if (nextN === 2) forceNextTwoRef.current = true;
+    }
+    setCurrentNum(nextN);
     saveGame();
     
     setTimeout(() => {
