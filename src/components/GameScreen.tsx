@@ -328,18 +328,29 @@ const GameScreen = ({
       }
     });
 
-    // Yeni Game Over Mantığı: Sürekli kontrol (Anında Bitiş)
+    // Yeni Game Over Mantığı: Sürekli kontrol (Gecikmeli Bitiş)
     Matter.Events.on(engine, 'afterUpdate', () => {
       const bodies = Matter.Composite.allBodies(engine.world);
+      let triggerGameOver = false;
       for (const body of bodies) {
         if (body.label === 'ball') {
           const ball = body as any;
-          // frameBottom (800 - 190) çizgisine değer değmez oyun biter.
-          // Sadece hızı çok düşükse (yani fırlatılan yeni bir top değil, yerleşmiş bir topsa) ve birleşmiyorsa.
-          if (!ball.isMerging && ball.velocity.y < 0.5 && ball.velocity.y > -0.5 && ball.position.y > (800 - 190)) {
-             onGameOver(scoreRef.current);
+          // frameBottom (800 - 190) çizgisi.
+          if (!ball.isMerging && ball.position.y > (800 - 190)) {
+            // Top fırlatılalı en az 2 saniye geçmiş olmalı ki dokunulmazlığı kalksın.
+            if (Date.now() - (ball.createdAt || 0) > 2000) {
+              ball.outOfBoundsTime = (ball.outOfBoundsTime || 0) + 16.66; // 60fps'de 1 kare
+              if (ball.outOfBoundsTime > 2000) { // Çizgiyi geçip 2 saniye beklerse oyun biter
+                triggerGameOver = true;
+              }
+            }
+          } else {
+            ball.outOfBoundsTime = 0; // Çizginin içine dönerse süreyi sıfırla
           }
         }
+      }
+      if (triggerGameOver) {
+         onGameOver(scoreRef.current);
       }
     });
 
