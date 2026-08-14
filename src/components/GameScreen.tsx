@@ -228,7 +228,7 @@ const GameScreen = ({
             if (data.bodies && data.bodies.length > 0) {
               const restoredBodies = data.bodies.map((b: any) => {
                 const ball = Matter.Bodies.circle(b.x, b.y, b.radius, {
-                  label: 'ball', restitution: 0.4, friction: 0.01, frictionStatic: 0.01, frictionAir: 0.002, density: 0.08, slop: 0.05
+                  label: 'ball', restitution: 0.05, friction: 0.01, frictionStatic: 0.01, frictionAir: 0.002, density: 0.08, slop: 0.05
                 }) as any;
               Matter.Body.setVelocity(ball, { x: b.vx, y: b.vy });
               ball.customValue = b.value;
@@ -285,7 +285,7 @@ const GameScreen = ({
           }
           
           const newBall = Matter.Bodies.circle(midX, midY, newRadius, {
-            label: 'ball', restitution: 0.4, friction: 0.01, frictionStatic: 0.01, frictionAir: 0.002, density: 0.08, slop: 0.05
+            label: 'ball', restitution: 0.05, friction: 0.01, frictionStatic: 0.01, frictionAir: 0.002, density: 0.08, slop: 0.05
           }) as any;
           newBall.customValue = newValue;
           newBall.createdAt = Date.now(); // Birleşen topa dokunulmazlık
@@ -546,12 +546,12 @@ const GameScreen = ({
     
     const radius = getRadius(currentNum);
     const ball = Matter.Bodies.circle(pointerXRef.current, height - 140, radius, {
-      label: 'ball', restitution: 0.4, friction: 0.01, frictionStatic: 0.01, frictionAir: 0.002, density: 0.08, slop: 0.05
+      label: 'ball', restitution: 0.05, friction: 0.01, frictionStatic: 0.01, frictionAir: 0.002, density: 0.08, slop: 0.05
     }) as any;
     ball.customValue = currentNum;
     ball.createdAt = Date.now(); // Fırlatılan topa dokunulmazlık
     
-    Matter.Body.setVelocity(ball, { x: (Math.random() - 0.5) * 4, y: -35 });
+    Matter.Body.setVelocity(ball, { x: (Math.random() - 0.5) * 5, y: -28 });
     Matter.World.add(engineRef.current.world, ball);
     
     let nextN = 0;
